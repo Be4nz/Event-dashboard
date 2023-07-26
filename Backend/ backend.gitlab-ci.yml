@@ -1,0 +1,103 @@
+variables:
+  # Change
+  TEAM_NAME: "event-dashboard"
+  HOST: "event-dashboard.devbstaging.com"
+  DEPLOYMENT_BRANCH: "master"
+
+  DB_TYPE: "postgresql"
+
+  # DO NOT CHANGE
+  IMAGE_NAME: $ACR_URL/$TEAM_NAME/backend
+
+
+image: docker:latest
+services:
+  - docker:18.09.7-dind
+
+stages:
+  - clone
+  - build_app
+  - build
+  - deploy
+  - status
+
+clone:
+  stage: clone
+  image: alpine:latest
+  before_script:
+    - apk update
+    - apk add curl jq git
+  script:
+    - . ./build-status.gitlab-ci.sh
+    - git clone https://$BITBUCKET_USER:$BITBUCKET_TOKEN@bitbucket.org/"$REPO_URL".git ./git-clone
+    - cd git-clone
+    - git checkout $SOURCE_BRANCH_NAME
+    - status INPROGRESS
+  artifacts:
+    paths:
+      - git-clone/*
+    reports:
+      dotenv: ./build-status.env
+
+build_app:
+  stage: build_app
+  image: openjdk:16-alpine
+  script:
+    - cd git-clone
+    - ./gradlew clean build
+  artifacts:
+    paths:
+      - git-clone/build/libs/*
+
+build:
+  stage: build
+  image: $ACR_URL/gitlab/packages:latest
+  before_script:
+    - az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
+    - az acr login --name  $ACR_NAME
+  script:
+    - cd git-clone
+    - docker build -t $IMAGE_NAME .
+    - docker push $IMAGE_NAME
+
+deploy:
+  stage: deploy
+  image: $ACR_URL/gitlab/packages:latest
+  before_script:
+    - apk update
+    - apk add curl jq
+  script:
+    - . ./build-status.gitlab-ci.sh
+    - if [[ ! "$PR_STATUS" == "MERGED" && "$TARGET_BRANCH_NAME" == "$DEPLOYMENT_BRANCH" ]]; then exit 0;fi
+    - cd git-clone
+    - create_db $TEAM_NAME $DB_PASSWORD
+    - helm upgrade
+      --install backend ./helm/backend
+      -f ./helm/backend/values.yaml
+      --namespace $TEAM_NAME
+      --create-namespace
+      --set backend.container.image=$IMAGE_NAME
+      --set backend.ingress.host=$HOST
+      --set backend.container.port=8080
+
+status_ok:
+  stage: status
+  image: alpine:latest
+  before_script:
+    - apk update
+    - apk add curl jq
+  script:
+    - . ./build-status.gitlab-ci.sh
+    - status SUCCESSFUL
+  when: on_success
+
+status_failed:
+  stage: status
+  image: alpine:latest
+  before_script:
+    - apk update
+    - apk add curl jq
+  script:
+    - . ./build-status.gitlab-ci.sh
+    - status FAILED
+  when: on_failure

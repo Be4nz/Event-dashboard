@@ -1,0 +1,25 @@
+nameOverride: ""
+fullnameOverride: ""
+
+backend:
+  container:
+    image: dbgliveuwacrsourcery.azurecr.io/vln-tk-team/backend:latest
+    # default - 1
+    replicas: 
+    # default - 80 
+    port: 80
+    resources: {}
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+      # requests:
+      #   cpu: 100m
+      #   memory: 128Mi
+  ingress:
+    host: 
+    # defualt - "/"
+    path: 
+    # default - "Prefix"
+    pathType: 
+    annotations:
+      kubernetes.io/ingress.class: traefik

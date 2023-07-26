@@ -1,0 +1,27 @@
+databaseChangeLog:
+  -  changeSet:
+       id:  'create-invites-table'
+       author:  Benas
+       changes:
+         -  createTable:
+              tableName:  shares
+              columns:
+                -  column:
+                     name:  id
+                     type:  int
+                     autoIncrement:  true
+                     constraints:
+                       primaryKey:  true
+                       nullable:  false
+                - column:
+                    name: event_id
+                    type: int
+                    constraints:
+                      nullable: false
+                      foreignKeyName: fk_event_participation
+                      references: events(id)
+                -  column:
+                     name:  user_id
+                     type: varchar(255)
+                     constraints:
+                       nullable: false

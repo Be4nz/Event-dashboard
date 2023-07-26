@@ -1,0 +1,15 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: {{ include "database.fullname" . }}
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.frontend.passHostHeader: "true"
+    traefik.backend.loadbalancer.sticky: "true"
+
+spec:
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: {{ include "database.fullname" . }}
+          port: {{ include "database.port" . }}

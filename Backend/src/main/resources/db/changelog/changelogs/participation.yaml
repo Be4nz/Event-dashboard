@@ -1,0 +1,45 @@
+databaseChangeLog:
+  -  changeSet:
+       id:  'create-participations-table'
+       author:  Vilius
+       changes:
+         -  createTable:
+              tableName:  participations
+              columns:
+                -  column:
+                     name:  id
+                     type:  int
+                     autoIncrement:  true
+                     constraints:
+                       primaryKey:  true
+                       nullable:  false
+                -  column:
+                     name:  notes
+                     type:  text
+                -  column:
+                     name:  created_at
+                     type:  TIMESTAMPTZ
+                     constraints:
+                       nullable:  false
+                -  column:
+                     name:  event_id
+                     type:  int
+                     constraints:
+                       nullable:  false
+                       foreignKeyName: fk_event_participation
+                       references: events(id)
+                -  column:
+                     name:  user_id
+                     type:  varchar(255)
+                     constraints:
+                       nullable:  false
+  -  changeSet:
+       id:  'add_appointment_fields'
+       author:  Vilius
+       changes:
+         - addColumn:
+            tableName: participations
+            columns:
+              - column:
+                  name: appointment_time
+                  type: TIMESTAMPTZ

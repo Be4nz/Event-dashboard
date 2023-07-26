@@ -1,0 +1,112 @@
+databaseChangeLog:
+  -  changeSet:
+       id:  'create-events-table'
+       author:  Benas
+       changes:
+         -  createTable:
+              tableName: events
+              columns:
+                -  column:
+                     name:  id
+                     type:  int
+                     autoIncrement:  true
+                     constraints:
+                       primaryKey:  true
+                       nullable:  false
+                -  column:
+                     name:  title
+                     type:  varchar(255)
+                     constraints:
+                       nullable: false
+                -  column:
+                     name:  type
+                     type:  varchar(255)
+                     constraints:
+                       nullable:  false
+                -  column:
+                     name:  description
+                     type:  text
+                - column:
+                    name: event_date
+                    type: TIMESTAMPTZ
+                    constraints:
+                      nullable: false
+                - column:
+                    name: registration_deadline
+                    type: TIMESTAMPTZ
+  - changeSet:
+      id: 'add-delete-column'
+      author: Vilius
+      changes:
+        - addColumn:
+            tableName: events
+            columns:
+            - column:
+                name: deleted
+                type: boolean
+  - changeSet:
+      id: 'add-subtype-fields'
+      author: Vilius
+      changes:
+        - addColumn:
+            tableName: events
+            columns:
+            - column:
+                name: subtype
+                type: varchar(255)
+  - changeSet:
+      id: 'add-image-url-fields'
+      author: Benas
+      changes:
+        - addColumn:
+            tableName: events
+            columns:
+              - column:
+                  name: image_url
+                  type: varchar(255)
+  - changeSet:
+      id: 'add-apoointment_fields'
+      author: Vilius
+      changes:
+        - addColumn:
+            tableName: events
+            columns:
+            - column:
+                name: start_time
+                type: TIMESTAMPTZ
+            - column:
+                name: end_time
+                type: TIMESTAMPTZ
+            - column:
+                name: duration
+                type: int  
+  - changeSet:
+      id: 'add-created_by_field'
+      author: Vilius
+      changes:
+        - addColumn:
+            tableName: events
+            columns:
+            - column:
+                name: created_by
+                type: varchar(255)
+  - changeSet:
+      id: 'add-reminder_sent-field'
+      author: Vilius
+      changes:
+        - addColumn:
+            tableName: events
+            columns:
+            - column:
+                name: reminder_sent
+                type: boolean
+  - changeSet:
+      id: 'add-time_zone-field'
+      author: Vilius
+      changes:
+        - addColumn:
+            tableName: events
+            columns:
+            - column:
+                name: time_zone
+                type: varchar(255)

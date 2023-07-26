@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "database.fullname" . }}
+  labels:
+    {{- include "database.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "database.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "database.selectorLabels" . | nindent 8 }}
+      annotations:
+        helm.sh/release-revision: {{ .Release.Revision | quote }}
+    spec:
+      securityContext:
+        fsGroup: 10001
+      containers:
+        - name: {{ include "database.fullname" . }}
+          image: {{ include "database.image" . }}
+          ports:
+            - containerPort: {{ include "database.port" . }}
+          resources:
+            requests:
+              memory: "2G"
+              cpu: "2000m"
+            limits:
+              memory: "2G"
+              cpu: "2000m"
+          {{- if eq .Values.type "postgresql" }}
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_PASSWORD
+              value: {{ required "Password is required" .Values.password }}
+            - name: POSTGRES_DB
+              value: {{ required "Database name is required" .Values.database }}
+            - name: POSTGRES_USER
+              value: {{ required "User name is required" .Values.user }}
+          volumeMounts:
+            - name: {{ include "database.fullname" . }}
+              mountPath: /var/lib/postgresql/data
+          {{ else if eq .Values.type "mssql" }}
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_SA_PASSWORD
+              value: {{ required "Password is required" .Values.password }}
+          volumeMounts:
+            - name: {{ include "database.fullname" . }}
+              mountPath: /var/opt/mssql
+          {{- end }}     
+      volumes:
+        - name: {{ include "database.fullname" . }}
+          persistentVolumeClaim:
+            claimName: {{ include "database.fullname" . }}

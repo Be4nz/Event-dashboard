@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgres
+    container_name: EVENT_DASHBOARD_DB
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=event-dashboard
+    ports:
+      - "5432:5432"
+    restart: unless-stopped

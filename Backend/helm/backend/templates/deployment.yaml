@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "backend.fullname" . }}
+  labels: 
+    {{- include "backend.labels" . | nindent 4 }}
+    
+spec:
+  replicas: {{ .Values.backend.container.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "backend.selectorLabels" . | nindent 8 }}
+      annotations:
+        helm.sh/release-revision: {{ .Release.Revision | quote }}
+    spec:
+      containers:
+        - name: {{ include "backend.fullname" . }}
+          image: {{ .Values.backend.container.image }}
+          imagePullPolicy: "Always"
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.container.port | default 80 }}
+              protocol: TCP
+          resources: 
+            {{- toYaml .Values.backend.container.resources | nindent 12 }}
